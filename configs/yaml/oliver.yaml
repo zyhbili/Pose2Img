@@ -1,7 +1,7 @@
 POSE2IMAGE:
   PATH:
-    img_base : "/{dataset root}/img"    ##TODO
-    kp_base : "/{dataset root}/keypoints"   ##TODO
+    img_base : "data/Oliver/imgs"    
+    kp_base : "data/Oliver/keypoints"   
     img_extension: '.jpg'
 
 
@@ -19,9 +19,9 @@ POSE2IMAGE:
 
   INFER:
     root_node: [[822.07040391],[357.76986784]]
-    ckpt_path: "{your root}/ckpt_final.pth"  ##TODO
-    src_img_path: "{your root}/oliver_source/Auto_Lending_-_Last_Week_Tonight_with_John_Oliver_HBO-4U2eDJnwz_s_58_000_0_00_05.405405.jpg"   ##TODO
-    src_kp_path: "{your root}/oliver_source/keypoints/Auto_Lending_-_Last_Week_Tonight_with_John_Oliver_HBO-4U2eDJnwz_s_58_000_0_00_05.405405.npy"  ##TODO
+    ckpt_path: "ckpt/Oliver/ckpt_final.pth"  
+    src_img_path: "source/Oliver/imgs/Auto_Lending_-_Last_Week_Tonight_with_John_Oliver_HBO-4U2eDJnwz_s_58_000_0_00_05.405405.jpg"   
+    src_kp_path: "source/Oliver/keypoints/Auto_Lending_-_Last_Week_Tonight_with_John_Oliver_HBO-4U2eDJnwz_s_58_000_0_00_05.405405.npy" 
 
 
   

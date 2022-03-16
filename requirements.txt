@@ -11,3 +11,4 @@ yacs==0.1.8
 matplotlib
 ffmpeg-python
 scipy
+tqdm

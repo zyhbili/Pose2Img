@@ -183,7 +183,7 @@ class Trainer():
     def run(self):
         for epoch in range(self.opt_parser.nepoch):
             self.__train_with_D__(epoch)
-            print(epoch)
+            print("epoch:", epoch)
             with torch.no_grad():
                 if epoch%2 == 0:
                     self.__val_pass__(epoch,infer = True)
@@ -240,12 +240,9 @@ class Trainer():
         if not infer:
             return
 
-        # video = (torch.cat(results, dim=0).view(-1,64,3,self.dataset.img_H,self.dataset.img_W)+1.0)/2.0
         video = (torch.cat(results, dim=0).view(-1,64,3,int(self.dataset.img_H/scale),int(self.dataset.img_W/scale))+1.0)/2.0
-
         w_thread = threading.Thread(target=write_video, args=(self.writer, video, epoch))
         w_thread.start()
-        # print("success1")
 
 def write_video(writer, video, epoch):
     writer.add_video(tag="val_video", vid_tensor= video, global_step=epoch, fps=15)

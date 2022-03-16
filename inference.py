@@ -10,11 +10,11 @@ import glob2 as gb
 import cv2
 from configs import get_cfg_defaults
 import torch
+from tqdm import tqdm
 
-batch_size = 8
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
+# For root_node in config.yaml
 def compute_root_node(npy_base):
     cnt = 0
     sum_result = np.zeros(2)
@@ -43,7 +43,7 @@ class NPZ_infer(Dataset):
         self.bias = np.array([[self.W_bias],[self.H_bias]])
         self.kp_path = sorted(gb.glob(os.path.join(cfg.PATH.kp_base, '*.npy')))
 
-        self.root_node_mean = np.array(cfg.INFER.root_node)   # root for oliver
+        self.root_node_mean = np.array(cfg.INFER.root_node)   # root for performer
 
 
         np_kpts = np.insert(np_kpts, 1, np.zeros(2), axis=2)
@@ -101,7 +101,7 @@ class NPZ_infer(Dataset):
         return  {'img': img, 'kp' : kp}
 
 
-def infer_only(cfg, dataloader):
+def infer_only(cfg, infer_loader):
     G = WarpModel(n_joints = 13, n_limbs = 8)
     ckpt = torch.load(cfg.INFER.ckpt_path)
 
@@ -115,7 +115,7 @@ def infer_only(cfg, dataloader):
 
     results = []
     with torch.no_grad():
-        for batch in dataloader:
+        for batch_idx,batch in enumerate(tqdm(infer_loader)):
             src_in = batch["src_in"].float().to(device)
             trans_in = batch["trans_in"].float().to(device)
             kp_src = batch["kp_src"].float().to(device)
@@ -128,7 +128,6 @@ def infer_only(cfg, dataloader):
             pose_target = batchify_cluster_kp(kp_tgt,int(cfg.HYPERPARAM.img_W/scale), int(cfg.HYPERPARAM.img_H/scale), cfg.HYPERPARAM.kp_var_root)
             g_out = G(src_in, pose_src, pose_target, src_mask_prior, trans_in)
 
-            print(g_out.shape)
             results.append(g_out.cpu())
             del g_out
         
@@ -137,6 +136,7 @@ def infer_only(cfg, dataloader):
         return video.permute(0,2,3,1)
 
 def img2vid(output_path, audio_path,name):
+    import ffmpeg
     vid_tic = time.time()
     output_dir = os.path.join(output_path, name+".mp4")
     input_audio = ffmpeg.input(audio_path)
@@ -151,7 +151,7 @@ def img2vid(output_path, audio_path,name):
     vid_toc = (time.time() - vid_tic)
     print(vid_toc)
 
-def save_img(cfg, output_path, npz_path, wav_path, name, to_video = False):
+def save_img(cfg, output_path, npz_path, wav_path, name, batch_size, to_video = False):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     img_dir = os.path.join(output_path, name)
@@ -159,17 +159,15 @@ def save_img(cfg, output_path, npz_path, wav_path, name, to_video = False):
         os.makedirs(img_dir)
 
     dataset = NPZ_infer(npz_path,cfg)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)    
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=8)    
 
     imgs = infer_only(cfg, dataloader)
     imgs = imgs.cpu().numpy()
-    print(imgs.shape)
-    for idx in range(imgs.shape[0]):
-        img_path = os.path.join(img_dir, '%03d.jpg' % idx)
+    print("Saving ...",imgs.shape)
+    for idx in tqdm(range(imgs.shape[0])):
+        img_path = os.path.join(img_dir, '%06d.jpg' % idx)
         cv2.imwrite(img_path, imgs[idx])
-    print("done")
-    if to_video:
-        img2vid(output_path, wav_path, name)
+    print("Saving Done!")
 
 
 
@@ -177,11 +175,13 @@ def save_img(cfg, output_path, npz_path, wav_path, name, to_video = False):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cfg_path", default = "configs/yaml/oliver.yaml", help="checkpoint path", type=str)
+    parser.add_argument("--cfg_path", default = "configs/yaml/Oliver.yaml", help="checkpoint path", type=str)
     parser.add_argument("--name", default = 'test',help="experiment name", type=str)
     parser.add_argument("--output_path", default = './results',help="output path", type=str)
-    parser.add_argument("--npz_path", default ='{your root}/target_pose/epoch0-DEMO-step1.npz', help="target pose npz path", type=str)
-    parser.add_argument("--wav_path", default ='{your root}/target_pose/epoch0-DEMO-step1.mp4',help="target audio path", type=str)
+    parser.add_argument("--npz_path", default ='target_pose/Oliver/varying_tmplt.npz', help="target pose npz path", type=str)
+    parser.add_argument("--wav_path", default ='target_pose/Oliver/varying_tmplt.mp4',help="target audio path", type=str)
+    parser.add_argument("--to_video", default = False,help= "use ffmpeg", type=bool)
+    parser.add_argument('--batch_size', type=int, default=8, help='batch size')
 
     args = parser.parse_args()
 
@@ -194,9 +194,13 @@ if __name__=="__main__":
     npz_path = args.npz_path
     wav_path = args.wav_path
     output_path = args.output_path
+    batch_size = args.batch_size
 
-    save_img(cfg, output_path, npz_path, wav_path, exp_name+"_rgb")
+    print(f"Results are stored in {output_path}/{exp_name}_rgb")
+    save_img(cfg, output_path, npz_path, wav_path, exp_name+"_rgb", batch_size)
 
+    if args.to_video:
+        img2vid(output_path, wav_path, exp_name+"_rgb")
 
 
 
