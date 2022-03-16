@@ -31,7 +31,7 @@ Our code is tested on Ubuntu 18.04LTS with Python3.6.
 1. Train Script:
 ``` bash
 python main.py \
-    --name test \
+    --name Oliver \
     --config_path configs/yaml/Oliver.yaml \
     --batch_size 1 \
 ```
@@ -47,9 +47,9 @@ Generate a realistic video for **Oliver** from {keypoints}.npz.
 
 ``` bash
 python inference.py \
-   --config_path cfg/yaml/Oliver.yaml \
-   --name test \
-   --npz_path target_pose/target_pose/Oliver/varying_tmplt.npz \
+   --cfg_path cfg/yaml/Oliver.yaml \
+   --name demo \
+   --npz_path target_pose/Oliver/varying_tmplt.npz \
    --wav_path target_pose/Oliver/varying_tmplt.mp4
 ```
 
