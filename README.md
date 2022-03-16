@@ -24,7 +24,7 @@ Our code is tested on Ubuntu 18.04LTS with Python3.6.
 - According to `$ROOT/configs/yaml/Oliver.yaml`:
 
 1. Unzip and put the data to `$ROOT/data/Oliver`
-2. Put the pretrained model to `$ROOT/ckpt/Oliver/ckpt_final.pth
+2. Put the pretrained model to `$ROOT/ckpt/Oliver/ckpt_final.pth`
 
 
 ## Train on the Demo dataset
