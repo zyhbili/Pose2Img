@@ -1,4 +1,4 @@
-# TalkingAnchor
+# Pose2Img
 Upper body image synthesis from skeleton(Keypoints).
 Pose2Img module in the ICCV-2021 paper "Speech Drives Templates: Co-Speech Gesture Synthesis with Learned Templates".
 [[arxiv](https://arxiv.org/abs/2108.08020) / [github](https://github.com/ShenhanQian/SpeechDrivesTemplates)]
