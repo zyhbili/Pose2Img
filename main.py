@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 import argparse
 import torch
-from trainer import Trainer
 
 
 root = './'
@@ -34,6 +33,7 @@ parser.add_argument('--load_ckpt_path', type=str, default='')
 
 
 if __name__=="__main__":
+    from trainer import Trainer
     opt_parser = parser.parse_args()
     model = Trainer(opt_parser)
     model.run()

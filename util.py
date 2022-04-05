@@ -112,7 +112,7 @@ def interpolate(im,x,y):
     return output
 
 def fast_gaussian_torch(img_width, img_height, center, var_x, var_y, L=49):
-    tmp = torch.zeros((img_height,img_width)).cuda()
+    tmp = torch.zeros((img_height,img_width)).to(device)
     
     if var_x<10 and var_y<10:
         L=11
@@ -156,8 +156,8 @@ def make_gaussian_map(img_width, img_height, center, var_x, var_y, theta):
 def make_gaussian_map_torch(img_width, img_height, center, var_x, var_y, theta):
     yv, xv = torch.meshgrid(torch.arange(0,img_height), torch.arange(0,img_width))
 
-    yv = yv.cuda()
-    xv = xv.cuda()
+    yv = yv.to(device)
+    xv = xv.to(device)
     a = np.cos(theta) ** 2 / (2 * var_x) + np.sin(theta) ** 2 / (2 * var_y)
     b = -np.sin(2 * theta) / (4 * var_x) + np.sin(2 * theta) / (4 * var_y)
     c = np.sin(theta) ** 2 / (2 * var_x) + np.cos(theta) ** 2 / (2 * var_y)
@@ -166,9 +166,9 @@ def make_gaussian_map_torch(img_width, img_height, center, var_x, var_y, theta):
                     c * (yv - center[1]) * (yv - center[1])))
 
 
-def make_limb_masks(limbs, joints, img_width, img_height, sigma_perp_root ):
+def make_limb_masks(limbs, joints, img_width, img_height, sigma_perp_root):
     n_limbs = len(limbs)
-    mask = torch.zeros((img_height, img_width, n_limbs)).cuda()
+    mask = torch.zeros((img_height, img_width, n_limbs)).to(device)
 
     # Gaussian sigma perpendicular to the limb axis.
     sigma_perp = np.array(sigma_perp_root) ** 2
@@ -194,12 +194,12 @@ def make_limb_masks(limbs, joints, img_width, img_height, sigma_perp_root ):
 
 def make_cluster_kp(cluster, joints, img_width, img_height, var_root):
     n_cluster = len(cluster)
-    pose = torch.zeros((img_height, img_width, n_cluster)).cuda()
+    pose = torch.zeros((img_height, img_width, n_cluster)).to(device)
     
     var = np.array(var_root)**2
     for i in range(n_cluster):
         n_joints_for_cluster = len(cluster[i])
-        kp_canvas = torch.zeros((img_height,img_width)).cuda()
+        kp_canvas = torch.zeros((img_height,img_width)).to(device)
         for j in range(n_joints_for_cluster):
             tmp =fast_gaussian_torch(img_width,img_height,joints[cluster[i][j]],var[i],var[i])
             kp_canvas += tmp
