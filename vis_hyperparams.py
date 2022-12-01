@@ -14,7 +14,12 @@ def display(cfg):
         path = img_path.split("/")[-1]
         filename, file_extension = os.path.splitext(path)  
         key_name = os.path.join(kp_base,filename+'.npy')
-        kp_122 = pose137_to_pose122(np.load(key_name)).transpose(1,0)
+
+        kp_tmp = np.load(key_name)
+        if kp_tmp.shape[0]==122 and kp_tmp.shape[1]==2:  #(122,2)
+            kp_122 = kp_tmp
+        else:#(3,137)
+            kp_122 = pose137_to_pose122(kp_tmp).transpose(1,0)
 
         W_bias = cfg.TRAIN.CROP.W_bias
         H_bias = cfg.TRAIN.CROP.H_bias
